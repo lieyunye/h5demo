@@ -1,17 +1,38 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'app',
   components: {
-    HelloWorld
+  },
+  mounted() {
+    let performance = window.performance || window.msPerformance || window.webkitPerformance;
+    if (performance && performance.timing) {
+	    let t = performance.timing;
+      let navigationStart = t.navigationStart; //跳转开始时间
+      let pageDownLoadedTime = t.responseEnd - navigationStart;
+      console.log('pageDownLoadedTime: ' + pageDownLoadedTime)
+      let appStartTime = t.domContentLoadedEventStart;
+      console.log('readyState: ' + document.readyState + new Date().getTime())
+      console.log('window readyState: ' + window.readyState + new Date().getTime())
+      window.onreadystatechange = () => {
+        console.log('window readyState: ' + window.readyState + new Date().getTime())
+      }
+      window.addEventListener("load", function(event) {
+        console.log("All resources finished loading!" + (new Date().getTime() - navigationStart));
+      });
+      document.onreadystatechange = () => { 
+      console.log('readyState: ' + document.readyState + new Date().getTime())
+
+      if (document.readyState == "complete") { 
+          // run code here
+      } 
+  }
+    }
   }
 }
 </script>
