@@ -6,6 +6,30 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>h5demo</title>
+    <style type="text/css">
+      .text-danger {
+        color: red;
+      }
+      .control-label {
+        text-align: left !important;
+      }
+      #resultBox {
+        width: 100%;
+        height: 300px;
+        border: 1px solid #888;
+        padding: 5px;
+        overflow: auto;
+        margin-bottom: 20px;
+      }
+      .uploaderMsgBox {
+        width: 100%;
+        border-bottom: 1px solid #888;
+      }
+      .cancel-upload {
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <noscript>
@@ -13,5 +37,108 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+    <div class="container" id="main-area">
+      <form ref="vExample">
+        <input type="file" style="display:none;" ref="vExampleFile" @change="vExampleUpload" />
+      </form>
+      <div class="row" style="padding:10px;">
+        <h4>示例1：直接上传视频</h4>
+        <a href="javascript:void(0);" class="btn btn-default" @click="vExampleAdd">直接上传视频</a>
+      </div>
+
+      <div class="row" id="resultBox">
+        <!-- 上传信息组件	 -->
+        <div class="uploaderMsgBox" v-for="uploaderInfo in uploaderInfos">
+          <div v-if="uploaderInfo.videoInfo">
+            视频名称：{{uploaderInfo.videoInfo.name + '.' + uploaderInfo.videoInfo.type}}；
+            上传进度：{{Math.floor(uploaderInfo.progress * 100) + '%'}}；
+            fileId：{{uploaderInfo.fileId}}；
+            上传结果：{{uploaderInfo.isVideoUploadCancel ? '已取消' : uploaderInfo.isVideoUploadSuccess ? '上传成功' : '上传中'}}；
+            <br>
+            地址：{{uploaderInfo.videoUrl}}；
+            <a href="javascript:void(0);" class="cancel-upload" v-if="!uploaderInfo.isVideoUploadSuccess && !uploaderInfo.isVideoUploadCancel" @click="uploaderInfo.cancel()">取消上传</a><br>
+          </div>
+        </div>
+      </div>
+  
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.21/vue.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+    <script src="//unpkg.com/vod-js-sdk-v6"></script>
+  
+    <script type="text/javascript">
+      ;(function () {
+        /**
+         * 计算签名。
+        **/
+        function getSignature() {
+          return axios.get('http://test.lyy.life:8080/uploadSignature', JSON.stringify({
+          })).then(function (response) {
+            console.log(response.data)
+            return response.data
+          })
+        };
+        var app = new Vue({
+          el: '#main-area',
+          data: {
+            uploaderInfos: [],
+          },
+          created: function () {
+            this.tcVod = new TcVod.default({
+              getSignature: getSignature
+            })
+          },
+          methods: {
+            /**
+             * vExample示例。添加视频
+            **/
+            vExampleAdd: function () {
+              this.$refs.vExampleFile.click()
+            },
+            /**
+             * vExample示例。上传视频过程。
+            **/
+            vExampleUpload: function () {
+              var self = this;
+              var videoFile = this.$refs.vExampleFile.files[0]
+              console.log('123')
+              var uploader = this.tcVod.upload({
+                videoFile: videoFile,
+              })
+              uploader.on('video_progress', function (info) {
+                uploaderInfo.progress = info.percent;
+                console.log(info.percent)
+              })
+              uploader.on('video_upload', function (info) {
+                uploaderInfo.isVideoUploadSuccess = true;
+              })
+              console.log(uploader, 'uploader')
+              var uploaderInfo = {
+                videoInfo: uploader.videoInfo,
+                isVideoUploadSuccess: false,
+                isVideoUploadCancel: false,
+                progress: 0,
+                fileId: '',
+                videoUrl: '',
+                cancel: function() {
+                  uploaderInfo.isVideoUploadCancel = true;
+                  uploader.cancel()
+                },
+              }
+              this.uploaderInfos.push(uploaderInfo)
+              uploader.done().then(function(doneResult) {
+                console.log('doneResult', doneResult)
+                uploaderInfo.fileId = doneResult.fileId;
+              }).then(function (videoUrl) {
+                uploaderInfo.videoUrl = videoUrl
+                self.$refs.vExample.reset();
+              })
+            }
+            
+          },
+        })
+      })();
+    </script>
   </body>
 </html>
