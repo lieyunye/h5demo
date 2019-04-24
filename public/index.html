@@ -232,7 +232,7 @@
                 //   progress,
                 //   partSize: 100 * 1024,
                 // };
-                self.client.multipartUpload('videoFileName', videoFile, {progress: progress}).then( (res) => {
+                self.client.multipartUpload('/files/fileName', videoFile, {progress: progress}).then( (res) => {
                   console.log('upload success: %j', res);
                   self.aliyunResult = 1
                 }).catch((err) => {
