@@ -217,6 +217,8 @@
                 var creds = response.data;
                 console.log(creds)
                 self.client = new OSS({
+                  endpoint: 'testh5.yishihui.com',
+                  cname: true,
                   region: region,
                   accessKeyId: creds.AccessKeyId,
                   accessKeySecret: creds.AccessKeySecret,
