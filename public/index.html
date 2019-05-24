@@ -83,7 +83,8 @@
           <a href="javascript:void(0);" class="cancel-upload"  @click="cancelaliyunUpload">取消上传</a><br>
           <br>
           <a href="javascript:void(0);" class="cancel-upload"  @click="resumealiyunUpload">恢复上传</a><br>
-
+          <br>
+          <a href="javascript:void(0);" class="cancel-upload"  @click="initClient">获取token</a><br>
         </div>
       </div>
   
@@ -195,16 +196,34 @@
                 progress: progress,
                 checkpoint:self.aliyunResumeCheckPoint
               }).then( (res) => {
-                  console.log('upload success: %j', res);
+                  console.log('upload success: %j', res.toString());
                   self.aliyunResult = 1
                 }).catch((err) => {
-                  console.log(err)
+                  console.log("err:" + err.toString())
                   if (err.name === 'cancel') {
                     self.aliyunResult = 3
                   } else {
                     self.aliyunResult = 2
                   }
                 });
+            },
+            initClient(){
+              var self = this;
+              var url = appServer + 'stsToken'
+              axios.get(url, JSON.stringify({
+              })).then(function (response) {
+                var creds = response.data;
+                console.log(creds)
+                self.client = new OSS({
+                  endpoint: 'testh5.yishihui.com',
+                  cname: true,
+                  region: region,
+                  accessKeyId: creds.AccessKeyId,
+                  accessKeySecret: creds.AccessKeySecret,
+                  stsToken: creds.SecurityToken,
+                  bucket: bucket
+                });
+              })
             },
             vExampleUploadaliyun: function () {
               this.aliyunResult = 0
@@ -234,11 +253,11 @@
                 //   progress,
                 //   partSize: 100 * 1024,
                 // };
-                self.client.multipartUpload('/files/fileName', videoFile, {progress: progress}).then( (res) => {
-                  console.log('upload success: %j', res);
+                self.client.multipartUpload(creds.FileName, videoFile, {progress: progress}).then( (res) => {
+                  console.log('upload success: ', res.toString());
                   self.aliyunResult = 1
                 }).catch((err) => {
-                  console.log(err)
+                  console.log("err:" + err.toString())
                   if (err.name === 'cancel') {
                     self.aliyunResult = 3
                   } else {
