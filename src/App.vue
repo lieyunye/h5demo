@@ -1,13 +1,13 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-  </div>
+  <Home/>
 </template>
 
 <script>
+import Home from './components/home'
 export default {
   name: 'app',
   components: {
+    Home
   },
   mounted() {
     let performance = window.performance || window.msPerformance || window.webkitPerformance;
