@@ -311,6 +311,7 @@ export default {
     },
     sendLog(logs){
       if (logs.length == 0) {
+        Logline.clean();
         return
       }
       var that = this
